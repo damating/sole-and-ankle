@@ -2,8 +2,19 @@ import React from "react";
 import styled from "styled-components/macro";
 
 import { COLORS, WEIGHTS } from "../../constants";
-import { formatPrice, pluralize, isNewShoe } from "../../utils";
+import { formatPrice, pluralize, isNewShoe, toTitleCase } from "../../utils";
 import Spacer from "../Spacer";
+
+const TAGS = {
+  "on-sale": {
+    name: "Sale",
+    color: COLORS.primary,
+  },
+  "new-release": {
+    name: "Just Released!",
+    color: COLORS.secondary,
+  },
+};
 
 const ShoeCard = ({
   slug,
@@ -31,24 +42,44 @@ const ShoeCard = ({
       ? 'new-release'
       : 'default'
 
+  const hasTag = variant !== "default";
+  const isOnSale = variant === "on-sale";
+  const tag = TAGS[variant];
+
   return (
     <Link href={`/shoe/${slug}`}>
       <Wrapper>
         <ImageWrapper>
           <Image alt="" src={imageSrc} />
+          {hasTag && <Tag color={tag.color}>{tag.name}</Tag>}
         </ImageWrapper>
         <Spacer size={12} />
         <Row>
           <Name>{name}</Name>
-          <Price>{formatPrice(price)}</Price>
+          <Price crossed={isOnSale}>{formatPrice(price)}</Price>
         </Row>
         <Row>
           <ColorInfo>{pluralize("Color", numOfColors)}</ColorInfo>
+          {isOnSale && <SalePrice>{formatPrice(salePrice)}</SalePrice>}
         </Row>
       </Wrapper>
     </Link>
   );
 };
+
+const Tag = styled.div`
+  color: ${COLORS.white};
+  background-color: ${(p) => p.color};
+  position: absolute;
+  top: 12px;
+  right: -4px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 10px;
+  font-size: ${14 / 18}rem;
+  font-weight: ${WEIGHTS.bold};
+  border-radius: 2px;
+`;
 
 const Link = styled.a`
   text-decoration: none;
@@ -67,6 +98,8 @@ const Image = styled.img`
 
 const Row = styled.div`
   font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Name = styled.h3`
@@ -74,7 +107,10 @@ const Name = styled.h3`
   color: ${COLORS.gray[900]};
 `;
 
-const Price = styled.span``;
+const Price = styled.span`
+  color: ${(p) => (p.crossed ? COLORS.gray[700] : undefined)};
+  text-decoration: ${(p) => (p.crossed ? "line-through" : undefined)};
+`;
 
 const ColorInfo = styled.p`
   color: ${COLORS.gray[700]};
